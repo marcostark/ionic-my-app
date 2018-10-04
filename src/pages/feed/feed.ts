@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
-import { IonicPage, NavController, NavParams } from 'ionic-angular';
+import { IonicPage, NavController, NavParams, LoadingController } from 'ionic-angular';
+import { MoovieProvider } from '../../providers/moovie/moovie';
 
 /**
  * Generated class for the FeedPage page.
@@ -12,23 +13,83 @@ import { IonicPage, NavController, NavParams } from 'ionic-angular';
 @Component({
   selector: 'page-feed',
   templateUrl: 'feed.html',
+  providers: [
+    MoovieProvider
+  ]
 })
 export class FeedPage {
 
-  public nome_usuario:string = "Marcos Souza";
+  public lista_filmes = new Array<any>();
 
-  constructor(public navCtrl: NavController, public navParams: NavParams) {
+  public nome_usuario:string = "Marcos Souza";
+  public loading;
+  public refresher;
+  public isRefresher: boolean = false;
+
+  constructor(
+    public navCtrl: NavController, 
+    public navParams: NavParams,
+    private movieProvider: MoovieProvider,
+    public loadingCtrl: LoadingController) {
   }
 
-  public somaDoisNumeros():void{
-        alert("Apenas uma função...")
+  openLoading() {
+    this.loading = this.loadingCtrl.create({
+      content: 'Aguarde...'
+    });
+  
+    this.loading.present();    
+  }
+
+  closeLoading() {
+    this.loading.dismiss();
+  }
+
+  doRefresh(refresher) {
+    this.refresher = refresher;
+    this.isRefresher = true;
+
+    this.carregarFilmes();
+
+    setTimeout(() => {
+      refresher.complete();
+    }, 2000);
   }
 
   /**
    * Parte do ciclo de vida página
    */
-  ionViewDidLoad() {
-    console.log('ionViewDidLoad FeedPage');
+  ionViewDidEnter() {
+    this.carregarFilmes();
   }
 
+  carregarFilmes() {
+
+    this.openLoading();
+    this.movieProvider.getLatestMovies().subscribe(
+      data=> {
+
+        const response = (data as any);
+        const obj_retorno = JSON.parse(response._body)
+        this.lista_filmes = obj_retorno.results;
+
+        console.log(obj_retorno);
+
+        //Depois de terminar de carregar
+        this.closeLoading();       
+        if(this.isRefresher){
+          this.refresher.complete();
+          this.isRefresher = false;
+        }
+
+      }, error => {
+        console.log(error)
+        this.closeLoading();
+        if(this.isRefresher){
+          this.refresher.complete();
+          this.isRefresher = false;
+        }
+      } )
+  }
+  
 }
