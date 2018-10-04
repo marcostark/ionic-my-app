@@ -1,24 +1,19 @@
 import { Http } from '@angular/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs/Observable';
 
-/*
-  Generated class for the MoovieProvider provider.
-
-  See https://angular.io/guide/dependency-injection for more info on providers
-  and Angular DI.
-*/
 @Injectable()
 export class MoovieProvider {
 
-  private baseEndpoint = 'https://api.themoviedb.org/3/'
+  private baseEndpoint = 'https://api.themoviedb.org/3';
+  private apiKey = 'f68473c740a0492a5b058938bbfa9351';
 
-  constructor(public http: Http) {
-    console.log('Hello MoovieProvider Provider');
+  constructor(public http: Http) { }
+
+  getLatestMovies(pageAtual = 1) {
+    return this.http.get(this.baseEndpoint + `/movie/popular?page=${pageAtual}&api_key=` + this.apiKey);
   }
 
-  getLatestMovies() {
-    return this.http.get("https://api.themoviedb.org/3/movie/popular?api_key=f68473c740a0492a5b058938bbfa9351");
+  getMovie(filmeId) {
+    return this.http.get(this.baseEndpoint + `/movie/${filmeId}?api_key=` + this.apiKey);
   }
-
 }
